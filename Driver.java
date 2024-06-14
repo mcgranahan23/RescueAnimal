@@ -1,11 +1,11 @@
 import java.util.ArrayList;
-
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Driver {
 
-    private static ArrayList<Dog> dogList = new ArrayList<Dog>();
-    private static ArrayList<Monkey> monkeyList = new ArrayList<Monkey>();
+    private static final ArrayList<Dog> dogList = new ArrayList<>();
+    private static final ArrayList<Monkey> monkeyList = new ArrayList<>();
     // Instance variables (if needed)
 
 
@@ -99,8 +99,15 @@ public class Driver {
     // The input validation to check that the dog is not already in the list
     // is done for you
     public static void intakeNewDog(Scanner scanner) {
-        System.out.println("What is the dog's name?");
-        String name = scanner.nextLine();
+        String name = null;
+        try {
+            System.out.println("What is the dog's name?");
+            name = scanner.nextLine();
+        }
+        catch (InputMismatchException e) {
+            System.out.println("Invalid name");
+            scanner.nextLine();
+        }
         for (Dog dog : dogList) {
             if (dog.getName().equalsIgnoreCase(name)) {
                 System.out.println("\n\nThis dog is already in our system\n\n");
@@ -114,7 +121,7 @@ public class Driver {
             String gender = scanner.nextLine();
 
             System.out.println("What is the dog's age?");             // This method gathers info about a dog for intake. After the
-                                                                      // info is gathered it attaches each piece of info to the relevant
+            // info is gathered it attaches each piece of info to the relevant
             String age = scanner.nextLine();                          // variable and adds the new dog to dogList
 
             System.out.println("What is the dog's weight?");
@@ -147,18 +154,22 @@ public class Driver {
     }
 
     public static void intakeNewMonkey(Scanner scanner) {
+        String name = null;
 
-        System.out.println("What is the monkey's name?");
-        String name = scanner.nextLine();
-
-            /*for(Monkey monkey: monkeyList) {     ***For future use***
-                if(monkey.getName().equalsIgnoreCase(name)) {
-                    System.out.println("\n\nThis monkey is already in our system\n\n");
-                    return;
-                }
+        try {
+            System.out.println("What is the monkey's name?");
+            name = scanner.nextLine();
+        }
+        catch (InputMismatchException e) {
+            System.out.println("Invalid name");
+            scanner.nextLine();
+        }
+        for(Monkey monkey: monkeyList) {
+            if(monkey.getName().equalsIgnoreCase(name)) {
+                System.out.println("\n\nThis monkey is already in our system\n\n");
+                return;
             }
-        	*/
-
+        }
         System.out.println("What is the monkey's species?");
         String species = scanner.nextLine();
 
@@ -207,31 +218,36 @@ public class Driver {
 
 
     public static void reserveAnimal(Scanner scanner) {
-
-        int i;                                // This method's code is excessive and will be cleaned up for the next
+        int i = 0;                                // This method's code is excessive and will be cleaned up for the next
         int count = 0;                        // part of the project.
         String type;
         String country;
         int dName;
         int mName;
+        String dogCountry = dogList.get(i).getInServiceLocation();
+        boolean dogReserve = dogList.get(i).getReserved();
+        String dogTrain = dogList.get(i).getTrainingStatus();
 
         System.out.println("What type of animal would you like to reserve?");
         type = scanner.nextLine();
         System.out.println("What country would you like the animal to be in?");
         country = scanner.nextLine();
 
+        /* The following if statement first uses i to index the first dog in dogList, grabs the in
+             service location, and compares it to the input for country ignoring upper or lower case.
+             It does the same for the same dogs training status to make sure it's in service, and makes
+             sure the dog is not already reserved. the "!" in front of getReserved() is the same as not equal to
+             except it makes sure reserved does not equal true.
+            */
+
         switch (type.toLowerCase()) {
             case "dog":
                 for (i = 0; i < dogList.size(); ++i) {
-                    // The following if statement first uses i to index the first dog in dogList, grabs the in
-                    // service location, and compares it to the input for country ignoring upper or lower case.
-                    // It does the same for the same dogs training status to make sure it's in service, and makes
-                    // sure the dog is not already reserved. the "!" in front of getReserved() is the same as not equal to
-                    // except it makes sure reserved does not equal true.
-
-                    if (dogList.get(i).getInServiceLocation().equalsIgnoreCase(country) && !dogList.get(i).getReserved()
-                            && dogList.get(i).getTrainingStatus().equalsIgnoreCase("in service")) {
-                        System.out.println("[" + (count + 1) + "] " + dogList.get(i).getName());
+                    if (dogCountry.equalsIgnoreCase(country) && !dogReserve
+                            && dogTrain.equalsIgnoreCase("in service")) {
+                        System.out.println();
+                        System.out.printf("[%s] %s, Breed: %s\n\n", (count + 1), dogList.get(i).getName(),
+                                            dogList.get(i).getBreed());
                         ++count;
                     }
                 }
@@ -242,7 +258,7 @@ public class Driver {
                     System.out.println("What number dog would you like to reserve?");
                 }
                 dName = scanner.nextInt() - 1;                           // dName has to be subtracted by one because (count + 1) is used to show the options
-                while (!dogList.get(dName).getReserved()) {
+                if (!dogList.get(dName).getReserved()) {
                     System.out.print("You have reserved " + dogList.get(dName).getName() + ".");
                     dogList.get(dName).setReserved(true);
                     break;
@@ -263,7 +279,7 @@ public class Driver {
                     System.out.println("What number monkey would you like to reserve?");
                 }
                 mName = scanner.nextInt() - 1;
-                while (!monkeyList.get(mName).getReserved()) {
+                if (!monkeyList.get(mName).getReserved()) {
                     System.out.print("You have reserved " + monkeyList.get(mName).getName() + ".");
                     monkeyList.get(mName).setReserved(true);
                     break;
@@ -275,13 +291,12 @@ public class Driver {
 
     }
 
-    public static void printAnimals(int list) {
-        int itemToPrint = list;
+    public static void printAnimals(int itemToPrint) {
+
         int i;
 
         RescueAnimal dIndex;
         RescueAnimal mIndex;
-
 
         if (itemToPrint == 4) {  // Print all dogs
             for (i = 0; i < dogList.size(); ++i) {
